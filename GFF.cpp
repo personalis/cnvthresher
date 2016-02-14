@@ -250,6 +250,11 @@ void GFF::add_evidence_attributes()
     for (vector<GRegion*>::iterator itreg=m_RegionList.begin(); itreg != m_RegionList.end(); itreg++)
     {
         GRegion *reg = *itreg;
+        if (reg->type() != Deletion && reg->type() != Duplication)
+        {
+            continue;
+        }
+
         //Divide by 2 so that normalized coverage represents local copy number
         //(i.e., we are assuming that the CovBaseline value represents 2 copies)
         double normFactor = m_CovBaseline[reg->chrID()] / 2;
@@ -310,6 +315,11 @@ void GFF::compute_coverage_baseline()
     for (vector<GRegion*>::iterator itreg=m_RegionList.begin(); itreg != m_RegionList.end(); itreg++)
     {
         GRegion *reg = *itreg;
+        if (reg->type() != Deletion && reg->type() != Duplication)
+        {
+            continue;
+        }
+
         if (reg->chrID() != lastchr)
         {
             if (lastchr >= 0)

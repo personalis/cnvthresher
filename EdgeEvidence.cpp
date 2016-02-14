@@ -557,7 +557,6 @@ void EdgeEvidence::count_biallelic_loci()
                 if (nMax+nMax2 > 0)
                 {
                     double f = (double)nMax2/(double)(nMax + nMax2);
-                    cerr << "    " << f << endl;
                     if (f > 0.20 && f < 0.30)
                     {
                         nunbalanced++;

@@ -46,7 +46,7 @@
 using namespace std;
 using namespace BamTools;
 
-static const char *versionString = "1.0";
+static const char *versionString = "1.0.1";
 
 //! Print the version string
 static int version();
@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
 
     //Set the input BAM filename pattern, and the input GFF filename
     bampattern = argv[optind];
+
     gffpath = argv[optind+1];
 
     //Make sure specified GFF exists
@@ -180,6 +181,19 @@ int main(int argc, char *argv[])
     for (vector<GRegion*>::iterator it = G.regionList().begin(); it != G.regionList().end(); ++it)
     {
         GRegion *reg = *it;
+
+        //Skip non-CNV features
+        if (reg->type() != Deletion && reg->type() != Duplication)
+        {
+            if (! QuietMode)
+            {
+                cerr << "Skipping non-CNV feature @ "
+                     << reg->chrName() << ":"
+                     << reg->pos1() << "-" << reg->pos2() << endl;
+            }
+            continue;
+        }
+
         if (! QuietMode)
         {
             cerr << endl << GRegion::timestamp() << " CNV @ "
@@ -190,6 +204,7 @@ int main(int argc, char *argv[])
         if (reg->size() > 1e7)
         {
             cerr << "cnvthresher cannot currently handle features larger than 10 Mbp; skipping" << endl;
+            continue;
         }
 
         //Load a new BAM if this region is on a different chromosome
@@ -252,9 +267,15 @@ size_t getInsertSize(BamReader &reader)
 
 void loadBAM(BamReader &reader, string chrName, string bampattern, bool QuietMode)
 {
-    //Determine whether the BAM pattern contains any wildcard ("*")
+    //Determine whether the BAM pattern contains a wildcard ("*" or "%CHROM%")
     //If not, then we just have a single BAM file
-    size_t WildcardIndex = bampattern.find("*");
+    size_t WildcardIndex = bampattern.find("%CHROM%");
+    if (WildcardIndex != string::npos)
+    {
+        bampattern.replace(WildcardIndex, 7, "*");
+    }
+
+    WildcardIndex = bampattern.find("*");
 
     //Close the previously opened BAM file, if necessary
     if (reader.IsOpen())

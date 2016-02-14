@@ -30,7 +30,14 @@ void MorphEvidence::resetForRegion(GRegion *reg)
 
     //For morphological anaysis, we traverse reads throughout the region,
     //including flanks that are each SoftLength in size
-    m_StartPos   = reg->pos1(true) - m_SoftLength2;
+    if (reg->pos1(true) < m_SoftLength2)
+    {
+        m_StartPos = 0;
+    }
+    else
+    {
+        m_StartPos = reg->pos1(true) - m_SoftLength2;
+    }
     m_EndPos     = reg->pos2(true) + m_SoftLength2;
     m_TargetSize = m_EndPos - m_StartPos + 1;
 
